@@ -63,7 +63,12 @@ public class ServicioService {
     }
 
     public void eliminar(Long id) {
-        servicioRepository.deleteById(id);
+        Servicio servicio = servicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+        servicio.setActivo(false);
+
+        servicioRepository.save(servicio);
     }
 
     private ServicioResponseDto toDto(Servicio servicio) {

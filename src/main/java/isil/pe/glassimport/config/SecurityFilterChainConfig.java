@@ -4,6 +4,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import isil.pe.glassimport.dto.response.AuthResponse;
 import isil.pe.glassimport.dto.response.JwtPayload;
 import isil.pe.glassimport.entity.User;
 import isil.pe.glassimport.repository.UserRepository;
@@ -27,107 +27,117 @@ import isil.pe.glassimport.services.JwtService;
 @EnableWebSecurity
 public class SecurityFilterChainConfig {
 
-    private final JwtAuthorization jwtAuthorizationFilter;
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
+        private final JwtAuthorization jwtAuthorizationFilter;
+        private final JwtService jwtService;
+        private final UserRepository userRepository;
 
-    public SecurityFilterChainConfig(JwtAuthorization jwtAuthorizationFilter, JwtService jwtService,
-            UserRepository userRepository) {
-        this.jwtAuthorizationFilter = jwtAuthorizationFilter;
-        this.jwtService = jwtService;
-        this.userRepository = userRepository;
-    }
+        @Value("${frontend.url}")
+        private String FRONTEND_URL;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/auth/**", "/oauth2/**", "/login/**", "/api/automoviles/**",
-                                "/api/horarios/**")
-                        .permitAll()
-                        .anyRequest().permitAll())
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
-                                .baseUri("/oauth2/authorization"))
-                        .redirectionEndpoint(
-                                redirectionEndpointConfig -> redirectionEndpointConfig.baseUri("/oauth2/code/**"))
-                        .successHandler((request, response, authentication) -> {
-                            try {
-                                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        public SecurityFilterChainConfig(
+                        JwtAuthorization jwtAuthorizationFilter,
+                        JwtService jwtService,
+                        UserRepository userRepository) {
+                this.jwtAuthorizationFilter = jwtAuthorizationFilter;
+                this.jwtService = jwtService;
+                this.userRepository = userRepository;
+        }
 
-                                // Extraer datos del usuario de Google
-                                String email = oAuth2User.getAttribute("email");
-                                String name = oAuth2User.getAttribute("name");
-                                String googleId = oAuth2User.getAttribute("sub");
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-                                System.out.println("✅ Usuario autenticado con Google: " + email);
+                http
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                // Buscar o crear usuario
-                                User user = userRepository.findByEmail(email)
-                                        .orElseGet(() -> {
-                                            System.out.println("🆕 Creando nuevo usuario: " + email);
-                                            User newUser = User.builder()
-                                                    .email(email)
-                                                    .username(name)
-                                                    .googleId(googleId)
-                                                    .estado("ACTIVO")
-                                                    .build();
-                                            return userRepository.save(newUser);
-                                        });
+                                .formLogin(AbstractHttpConfigurer::disable)
+                                .httpBasic(AbstractHttpConfigurer::disable)
 
-                                System.out.println("✅ Usuario guardado/encontrado - ID: " + user.getId() + ", Nombre: "
-                                        + user.getUsername());
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint((req, res, ex) -> {
+                                                        res.setStatus(401);
+                                                        res.setContentType("application/json");
+                                                        res.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
+                                                }))
 
-                                // Generar token JWT
-                                long expiration = 7 * 24 * 60 * 60;
-                                JwtPayload tokenPayload = new JwtPayload(
-                                        user.getId().toString(),
-                                        user.getEmail(),
-                                        List.of());
-                                String token = jwtService.generateToken(tokenPayload, expiration);
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/api/auth/login",
+                                                                "/api/auth/register",
+                                                                "/oauth2/**")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
 
-                                // Crear AuthResponse
-                                AuthResponse authResponse = AuthResponse.fromUser(user, token);
+                                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                                // Redirigir al frontend con los datos
-                                String redirectUrl = String.format(
-                                        "http://localhost:5173/auth/callback?token=%s&userId=%d&userName=%s&userEmail=%s",
-                                        token,
-                                        user.getId(),
-                                        URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8),
-                                        URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8));
+                                // ✅ OAuth2 Google SOLO cuando se llama explícitamente
+                                .oauth2Login(oauth -> oauth
+                                                .authorizationEndpoint(a -> a.baseUri("/oauth2/authorization"))
+                                                .redirectionEndpoint(r -> r.baseUri("/oauth2/code/**"))
+                                                .successHandler((request, response, authentication) -> {
+                                                        try {
+                                                                OAuth2User oAuth2User = (OAuth2User) authentication
+                                                                                .getPrincipal();
 
-                                response.sendRedirect(redirectUrl);
+                                                                String email = oAuth2User.getAttribute("email");
+                                                                String name = oAuth2User.getAttribute("name");
+                                                                String googleId = oAuth2User.getAttribute("sub");
 
-                            } catch (Exception e) {
-                                System.err.println("❌ Error en OAuth2 login: " + e.getMessage());
-                                e.printStackTrace();
-                                try {
-                                    response.sendRedirect("http://localhost:5173/auth?error=true");
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                        }))
-                .build();
-    }
+                                                                User user = userRepository.findByEmail(email)
+                                                                                .orElseGet(() -> {
+                                                                                        User newUser = User.builder()
+                                                                                                        .email(email)
+                                                                                                        .username(name)
+                                                                                                        .googleId(googleId)
+                                                                                                        .estado("ACTIVO")
+                                                                                                        .build();
+                                                                                        return userRepository
+                                                                                                        .save(newUser);
+                                                                                });
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                                                                long expiration = 7 * 24 * 60 * 60;
+                                                                JwtPayload payload = new JwtPayload(
+                                                                                user.getId().toString(),
+                                                                                user.getEmail(),
+                                                                                List.of("ROLE_USER"));
 
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false);
+                                                                String token = jwtService.generateToken(payload,
+                                                                                expiration);
 
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+                                                                String redirectUrl = String.format(
+                                                                                FRONTEND_URL + "/auth/callback?token=%s&userId=%d&userName=%s&userEmail=%s",
+                                                                                token,
+                                                                                user.getId(),
+                                                                                URLEncoder.encode(user.getUsername(),
+                                                                                                StandardCharsets.UTF_8),
+                                                                                URLEncoder.encode(user.getEmail(),
+                                                                                                StandardCharsets.UTF_8));
 
+                                                                response.sendRedirect(redirectUrl);
+
+                                                        } catch (Exception e) {
+                                                                try {
+                                                                        response.sendRedirect(
+                                                                                        FRONTEND_URL + "/auth?error=true");
+                                                                } catch (Exception ignored) {
+                                                                }
+                                                        }
+                                                }));
+
+                return http.build();
+        }
+
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of("*"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(List.of("*"));
+                config.setAllowCredentials(false);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
+        }
 }
