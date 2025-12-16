@@ -1,0 +1,217 @@
+/* --- Variables y Reset --- */
+:root {
+  --color-primary: #2d3748; 
+  --color-text-light: #4a5568; 
+  --color-bg-dark: #000;
+  --color-social-bg: #f7fafc; 
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* --- Cuerpo --- */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+/* --- Fondo principal --- */
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('img/luna.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  filter: brightness(0.9) saturate(1.2);
+  z-index: -3;
+}
+
+/* --- Contenedor principal --- */
+.login-container {
+  perspective: 1200px;
+}
+
+/* --- Card principal --- */
+.card-wrapper {
+  position: relative;
+  width: 370px;
+  height: 530px;
+  transform-style: preserve-3d;
+  transition: transform 0.9s ease-in-out;
+}
+
+.card-wrapper.flipped {
+  transform: rotateY(180deg);
+}
+
+/* --- Tarjetas (Login y Registro) --- */
+.login-card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  padding: 25px 35px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(25px);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-align: center;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+.card-header {
+  text-align: right;
+  margin-bottom: 15px;
+}
+
+.card-header i {
+  font-size: 22px;
+  color: white;
+}
+
+/* --- Títulos y textos --- */
+.card-body h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #e2e8f0;
+  margin-bottom: 30px;
+}
+
+/* --- Inputs --- */
+.input-group {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.input-group .icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #4a5568;
+  font-size: 16px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #4a5568;
+  cursor: pointer;
+}
+
+/* --- Enlace de contraseña olvidada --- */
+.forgot-password {
+  display: block;
+  text-align: right;
+  font-size: 13px;
+  color: #edf2f7;
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+
+/* --- Botón principal --- */
+.btn-get-started {
+  width: 100%;
+  padding: 12px;
+  background-color: #1a202c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 30px;
+}
+
+.btn-get-started:hover {
+  background-color: #2d3748;
+}
+
+/* --- Separador --- */
+.or-separator {
+  font-size: 14px;
+  color: #e2e8f0;
+  margin-bottom: 15px;
+}
+
+/* --- Botones sociales --- */
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.social-btn {
+  width: 48px;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 12px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+.social-btn:hover {
+  transform: scale(1.1);
+}
+
+.google i { color: #4285f4; }
+.facebook i { color: #1877f2; }
+.apple i { color: #000; }
+
+/* --- Texto de registro --- */
+.register-text {
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.register-link {
+  color: #63b3ed;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}

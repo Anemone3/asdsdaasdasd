@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ebolt - Login / Registro</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="background" id="parallax-bg"></div>
+
+  <div class="login-container">
+    <div class="card-wrapper" id="card-wrapper">
+      
+      <!-- LOGIN -->
+      <div class="login-card card-front">
+        <div class="card-header">
+          <a href="paginaPrincipal.html"><i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="card-body">
+          <h2>INICIAR SESIÓN</h2>
+          <p class="subtitle">Inicia sesion con nostros para reservar tu cita </p>
+
+          <form id="loginForm">
+            <div class="input-group">
+              <i class="fas fa-envelope icon"></i>
+              <input id="loginEmail" type="email" placeholder="Correo electrónico" required>
+            </div>
+
+            <div class="input-group password-group">
+              <i class="fas fa-lock icon"></i>
+              <input id="loginPassword" type="password" placeholder="Contraseña" required>
+              <i class="fas fa-eye-slash toggle-password"></i>
+            </div>
+
+            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+
+            <button type="submit" class="btn-get-started">Comenzar</button>
+          </form>
+
+          <p class="or-separator">O inicia sesión con</p>
+
+          <div class="social-login">
+            <button class="social-btn google"><i class="fab fa-google"></i></button>
+          
+          </div>
+
+          <p class="register-text">¿No tienes una cuenta? 
+            <a href="#" id="show-register" class="register-link">Crear cuenta</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- REGISTRO -->
+      <div class="login-card card-back">
+        <div class="card-header">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div class="card-body">
+          <h2>CREAR CUENTA</h2>
+          <p class="subtitle">Crea una cuenta para iniciar sesion </p>
+
+          <form id="registerForm">
+            <div class="input-group">
+              <i class="fas fa-user icon"></i>
+              <input type="text" id="username" placeholder="Nombre completo" required>
+            </div>
+
+            <div class="input-group">
+              <i class="fas fa-envelope icon"></i>
+              <input type="email" id="email" placeholder="Correo electrónico" required>
+            </div>
+
+            <div class="input-group password-group">
+              <i class="fas fa-lock icon"></i>
+              <input type="password" id="password" placeholder="Contraseña" required>
+              <i class="fas fa-eye-slash toggle-password"></i>
+            </div>
+
+            <div class="input-group password-group">
+              <i class="fas fa-lock icon"></i>
+              <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" required>
+              <i class="fas fa-eye-slash toggle-password"></i>
+            </div>
+
+            <button type="submit" class="btn-get-started">Registrarse</button>
+          </form>
+
+          <p class="register-text">¿Ya tienes una cuenta? 
+            <a href="#" id="show-login" class="register-link">Inicia sesión</a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

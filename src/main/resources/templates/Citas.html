@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservar Cita - Glass Import Automotriz</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f4f6fb;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      width: 230px;
+      background-color: #fff;
+      border-right: 1px solid #dee2e6;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 20px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      color: #3c4858;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin: 4px 0;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #e6f0ff;
+      color: #055ccf;
+    }
+
+    .sidebar a i {
+      margin-right: 10px;
+    }
+
+    /* Main content */
+    .main-content {
+      margin-left: 250px;
+      padding: 40px;
+    }
+
+    .welcome-card h2 {
+      font-weight: 700;
+      color: #055ccf;
+    }
+
+    .form-section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+    }
+
+    .form-section h5 {
+      font-weight: 600;
+      color: #055ccf;
+      border-bottom: 2px solid #e6f0ff;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .btn-primary {
+      background-color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 30px;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background-color: #222;
+    }
+
+    #alertaCita {
+      display: none;
+    }
+
+    /* 🌿 Botón de WhatsApp */
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: #25D366;
+      color: white;
+      border-radius: 50px;
+      padding: 10px 18px;
+      font-weight: 500;
+      text-decoration: none;
+      box-shadow: 0 4px 8px rgba(37, 211, 102, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .whatsapp-btn i {
+      font-size: 18px;
+    }
+
+    .whatsapp-btn:hover {
+      background-color: #1ebe5d;
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(37, 211, 102, 0.4);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column">
+    <div class="text-center mb-4">
+      <img src="img/logo.png" alt="glassimport" width="120">
+    </div>
+    <a href="InicioLogin.html"><i class="bi bi-house-door"></i>Inicio</a>
+    <a href="Citas.html" class="active"><i class="bi bi-calendar-plus"></i>Nueva cita</a>
+    <a href="MisCitas.html"><i class="bi bi-calendar-event"></i>Mis Citas</a>
+    <a href="#"><i class="bi bi-question-circle"></i>Ayuda</a>
+    <a href="paginaPrincipal.html"><i class="bi bi-box-arrow-right"></i>Cerrar sesión</a>
+
+    <!-- Pie con botón -->
+    <div class="mt-auto text-center small text-muted p-3">
+      <p>¿Tienes alguna duda?<br>ventas@glassimport.net</p>
+      <a href="https://api.whatsapp.com/send/?phone=51972771795&text=%C2%A1Hola%2C+Glass+Import%21+Quiero+solucionar+los+problemas+con+mis+lunas.%20&type=phone_number&app_absent=0"
+         class="whatsapp-btn" target="_blank">
+         <i class="bi bi-whatsapp"></i> Whatsapp
+      </a>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <div class="welcome-card mb-4 text-center">
+      <h2>¡Reserva tu Próxima Cita!</h2>
+      <p class="text-secondary">Completa los datos para agendar tu visita al taller.</p>
+    </div>
+
+    <!-- Alerta de éxito -->
+    <div class="alert alert-success text-center shadow-sm" id="alertaCita">
+      <i class="bi bi-check-circle-fill me-2"></i> ¡Tu cita ha sido generada exitosamente!
+    </div>
+
+    <!-- Formulario -->
+    <form id="formReserva" class="form-section">
+
+      <h5><i class="bi bi-geo-alt-fill me-2"></i>Dirección del Taller</h5>
+      <div class="row g-3 mb-4">
+        <div class="col-md-12">
+          <input type="text" class="form-control bg-light" value="Av. del Ejército 867" readonly />
+        </div>
+      </div>
+
+      <h5><i class="bi bi-car-front-fill me-2"></i>Detalles del Vehículo</h5>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <input id="marca" type="text" class="form-control" placeholder="Marca" required />
+        </div>
+        <div class="col-md-6">
+          <select id="modelo" class="form-select" required>
+            <option selected disabled> Seleccione Modelo </option>
+            <option>Toyota Corolla</option>
+            <option>Hyundai Tucson</option>
+            <option>Chevrolet Onix</option>
+            <option>Kia Rio</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <input id="anio" type="number" class="form-control" placeholder="Año" required />
+        </div>
+        <div class="col-md-6">
+          <input id="placa" type="text" class="form-control" placeholder="Placa" required />
+        </div>
+      </div>
+
+      <h5><i class="bi bi-calendar-date-fill me-2"></i>Detalles de la Cita</h5>
+      <div class="row g-3 mb-4">
+        <!-- NUEVO CAMPO SERVICIO -->
+        <div class="col-md-12">
+          <select id="servicio" class="form-select" required>
+            <option selected disabled>Seleccione  el Tipo de Servicio </option>
+            <option>Láminas de Seguridad</option>
+            <option>Instalación de Parabrisas</option>
+            <option>Instalación de laterales y lunetas</option>
+            <option>Láminas Polarizadas</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <input id="fechaCita" type="date" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+          <select id="horaCita" class="form-select" required>
+            <option selected disabled>Seleccione  la Hora de su Cita </option>
+            <option>09:00 a.m.</option>
+            <option>10:30 a.m.</option>
+            <option>12:00 p.m.</option>
+            <option>03:00 p.m.</option>
+            <option>05:00 p.m.</option>
+          </select>
+        </div>
+      </div>
+
+      <h5><i class="bi bi-chat-left-dots-fill me-2"></i>Notas Adicionales </h5>
+      <div class="mb-4">
+        <textarea id="nota" class="form-control" rows="3" placeholder="Escribe alguna observación del vehiculo..."></textarea>
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary">
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+      // ====== REFERENCIAS ======
+      const form = document.getElementById("formReserva");
+      const alerta = document.getElementById("alertaCita");
+
+      // Inputs / selects (usamos ids que agregaste)
+      const inputMarca = document.getElementById("marca");
+      const selectModelo = document.getElementById("modelo");
+      const inputPlaca = document.getElementById("placa");
+
+      // Estados
+      let todasLasMarcas = [];
+      let modelosActuales = [];
+
+      // ====== SUGERENCIAS: contenedor dentro del parent del input de Marca ======
+      const sugerenciasDiv = document.createElement("div");
+      sugerenciasDiv.style.position = "relative";
+      // aseguramos que el contenedor padre tenga position: relative para calcular el absolut posicion
+      inputMarca.parentNode.style.position = "relative";
+      inputMarca.parentNode.appendChild(sugerenciasDiv);
+
+      const listaSugerencias = document.createElement("ul");
+      Object.assign(listaSugerencias.style, {
+          position: "absolute",
+          top: "100%",
+          left: "0",
+          right: "0",
+          zIndex: "1000",
+          background: "white",
+          border: "1px solid #ddd",
+          borderRadius: "6px",
+          margin: "4px 0 0 0",
+          padding: "0",
+          listStyle: "none",
+          maxHeight: "200px",
+          overflowY: "auto",
+          display: "none"
+      });
+      sugerenciasDiv.appendChild(listaSugerencias);
+
+      // ====== OBTENER MARCAS (una sola vez) ======
+      fetch("https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json")
+          .then(res => res.json())
+          .then(data => {
+              todasLasMarcas = data.Results.map(m => m.Make_Name).sort();
+          })
+          .catch(err => console.error("Error cargando marcas:", err));
+
+      // ====== AUTOCOMPLETADO DE MARCA ======
+      inputMarca.addEventListener("input", () => {
+          const texto = inputMarca.value.toLowerCase();
+          listaSugerencias.innerHTML = "";
+
+          if (!texto) {
+              listaSugerencias.style.display = "none";
+              return;
+          }
+
+          const filtradas = todasLasMarcas
+              .filter(marca => marca.toLowerCase().startsWith(texto))
+              .slice(0, 10);
+
+          filtradas.forEach(marca => {
+              const li = document.createElement("li");
+              li.textContent = marca;
+              Object.assign(li.style, { padding: "8px 12px", cursor: "pointer" });
+              li.addEventListener("mouseover", () => li.style.background = "#f0f4ff");
+              li.addEventListener("mouseout", () => li.style.background = "white");
+              li.addEventListener("click", () => {
+                  inputMarca.value = marca;
+                  listaSugerencias.style.display = "none";
+                  cargarModelos(marca);
+              });
+              listaSugerencias.appendChild(li);
+          });
+
+          listaSugerencias.style.display = filtradas.length ? "block" : "none";
+      });
+
+      // Cerrar sugerencias cuando se hace clic fuera
+      document.addEventListener("click", (e) => {
+          if (!sugerenciasDiv.contains(e.target)) {
+              listaSugerencias.style.display = "none";
+          }
+      });
+
+      // ====== CARGAR MODELOS SEGÚN MARCA ======
+      function cargarModelos(marca) {
+          // mantenemos feedback usuario
+          selectModelo.innerHTML = `<option selected disabled>Cargando modelos...</option>`;
+          fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${encodeURIComponent(marca)}?format=json`)
+              .then(res => res.json())
+              .then(data => {
+                  modelosActuales = data.Results.map(m => m.Model_Name).sort();
+                  if (!modelosActuales.length) {
+                      selectModelo.innerHTML = `<option disabled selected>No hay modelos disponibles</option>`;
+                      return;
+                  }
+                  selectModelo.innerHTML = `<option selected disabled>Seleccione Modelo</option>`;
+                  modelosActuales.forEach(modelo => {
+                      const opt = document.createElement("option");
+                      opt.value = modelo;
+                      opt.textContent = modelo;
+                      selectModelo.appendChild(opt);
+                  });
+              })
+              .catch(() => {
+                  selectModelo.innerHTML = `<option disabled selected>Error al cargar modelos</option>`;
+              });
+      }
+
+      // ====== FORMATO PLACA: forzar mayúsculas mientras escribe ======
+      inputPlaca.addEventListener("input", () => {
+          const pos = inputPlaca.selectionStart;
+          inputPlaca.value = inputPlaca.value.toUpperCase();
+          inputPlaca.setSelectionRange(pos, pos);
+      });
+
+      // ====== VALIDACIONES AL ENVIAR ======
+      form.addEventListener("submit", function (e) {
+          // obtenemos valores actuales
+          const placa = (inputPlaca && inputPlaca.value || "").trim().toUpperCase();
+          const marca = (inputMarca && inputMarca.value || "").trim();
+          const modelo = (selectModelo && selectModelo.value || "").trim();
+
+          const formatoPlaca = /^[A-Z0-9]{3}-?[A-Z0-9]{3}$/; // formato flexible: ABC-123, A1B234, etc.
+
+          // 1) Campos obligatorios (marca, modelo, fecha, hora )
+
+          if (!marca) {
+              e.preventDefault();
+              alert("⚠️ Complete la marca del vehículo.");
+              inputMarca && inputMarca.focus();
+              return;
+          }
+          if (!modelo) {
+              e.preventDefault();
+              alert("⚠️ Seleccione el modelo del vehículo.");
+              selectModelo && selectModelo.focus();
+              return;
+          }
+          if (!placa) {
+              e.preventDefault();
+              alert("⚠️ Complete la placa del vehículo.");
+              inputPlaca && inputPlaca.focus();
+              return;
+          }
+
+          if (!formatoPlaca.test(placa)) {
+              e.preventDefault();
+              alert("⚠️ La placa ingresada no tiene un formato válido del Perú (ejemplo: ABC-123 o A1B-234).");
+              inputPlaca && inputPlaca.focus();
+              return;
+          }
+
+          // Todo OK: prevenir envío por defecto y mostrar alerta (mantengo el UX que ya tenías)
+          e.preventDefault();
+          alerta.style.display = "block";
+          form.reset();
+
+          // limpiar selectModelo (evita que queda con texto anterior)
+          selectModelo.innerHTML = `<option selected disabled> Seleccione Modelo </option>`;
+
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setTimeout(() => {
+              alerta.style.display = "none";
+          }, 4000);
+      });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,15 @@
+services:
+  glass_import_db:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5033:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: solanch
+      POSTGRES_DB: glassimport_db
+    container_name: glass_import_db
+    volumes:
+      - glassimport:/var/lib/postgresql/data
+volumes:
+  glassimport:

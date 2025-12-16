@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Import</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f5f7;
+      color: #111;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: white;
+      padding: 1rem 2rem;
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      color: #000;
+      font-size: 1.5rem;
+    }
+
+    .navbar-nav .nav-link {
+      color: #000;
+      margin: 0 0.8rem;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background-color: #4b65ff;
+      border: none;
+      border-radius: 25px;
+      padding: 0.5rem 1.4rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 100px 20px;
+      background-color: white;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin-bottom: 30px;
+    }
+
+    .hero img {
+      width: 50%;
+      border-radius: 600px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    /* Nueva sección debajo del inicio */
+    .info-glass {
+      background-color: #fff;
+      padding: 80px 20px;
+     
+    }
+
+    .info-glass h2 {
+      font-weight: 800;
+    }
+
+    .info-glass i {
+      color: #4b65ff;
+    }
+
+    .info-glass img {
+       
+        width: 80%;
+      border-radius: 40px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Section: Find your dream car */
+    .features {
+      text-align: center;
+      padding: 70px 20px;
+    }
+
+    .features h2 {
+      font-weight: 800;
+      margin-bottom: 15px;
+    }
+
+    .features p {
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    .features .card {
+      border: none;
+      background-color: #fff;
+      border-radius: 15px;
+      transition: 0.3s;
+    }
+
+    .features .card:hover {
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      transform: translateY(-5px);
+    }
+
+    /* Featured Section */
+    .featured {
+      background-color: #fff;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .featured h2 {
+      font-weight: 800;
+      margin-bottom: 40px;
+    }
+
+    .car-card {
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      transition: 0.3s;
+      border: none;
+    }
+
+    .car-card img {
+      width: 100%;
+      height: 65%;
+      object-fit: cover;
+      border-bottom: 1px solid #eee;
+    }
+
+    .car-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .car-card h5 {
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    .car-card p {
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    /* Pick Your Car Section */
+    .pick {
+      padding: 70px 20px;
+      text-align: center;
+      background-color: #f4f5f7;
+    }
+
+    .pick h2 {
+      font-weight: 800;
+      margin-bottom: 40px;
+    }
+
+    .icon-box {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      transition: 0.3s;
+    }
+
+    .icon-box:hover {
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      transform: translateY(-5px);
+    }
+
+    .icon-box i {
+      font-size: 2rem;
+      color: #4b65ff;
+      margin-bottom: 15px;
+    }
+
+    /* Free Test Drive Section */
+    .test-drive {
+      text-align: center;
+      padding: 80px 20px;
+      background-color: white;
+    }
+
+    .test-drive .inner {
+      background: linear-gradient(135deg, #4b65ff, #1e2aff);
+      border-radius: 30px;
+      color: white;
+      padding: 60px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .test-drive h3 {
+      font-weight: 800;
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .test-drive img {
+      width: 200px;
+      border-radius: 20px;
+    }
+    
+    footer {
+      background: #000;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="#"><img src="img/logo.png" alt="logo" style="width:33%;"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">¿Quienes somos?</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Servicios</a></li>
+        </ul>
+       <a  href="Login_Registro.html"> <button class="btn btn-primary ">Login</button></a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>LUNAS PERFECTAS, MANEJO SEGURO</h1>
+    <img src="img/lunacocheopel.jpg" alt="Car">
+  </section>
+
+  <!-- NUEVA SECCIÓN DE INFORMACIÓN (debajo del inicio) -->
+  <section class="info-glass py-5 bg-white">
+    <div class="container d-flex flex-wrap align-items-center justify-content-between">
+      <div class="text-section col-md-6">
+        <h2 class="fw-bold mb-3">Encuentra el cuidado ideal para tu auto</h2>
+        <p class="text-muted mb-4">
+          En <strong>Glass Import</strong> somos especialistas en instalación y reparación de lunas, parabrisas y vidrios automotrices. 
+          Ofrecemos productos de alta calidad y un servicio rápido, profesional y garantizado.
+        </p>
+
+        <div class="d-flex align-items-start mb-3">
+          <i class="bi bi-shield-check text-primary fs-4 me-3"></i>
+          <div>
+            <h6 class="fw-semibold mb-0">Seguridad Garantizada</h6>
+            <small class="text-muted">Usamos materiales certificados que aseguran tu visibilidad y protección.</small>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-start mb-4">
+          <i class="bi bi-tools text-primary fs-4 me-3"></i>
+          <div>
+            <h6 class="fw-semibold mb-0">Servicio Profesional</h6>
+            <small class="text-muted">Nuestro equipo técnico capacitado realiza cada instalación con precisión.</small>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="image-section col-md-5 text-center mt-4 mt-md-0">
+        <img src="img/colocacion.jpeg" 
+             alt="Instalación de lunas" 
+             class="img-fluid rounded-5 shadow-lg">
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <h2>Cuida tu auto con vidrios de primer nivel</h2>
+    <p>Más de 30 años de experiencia en la instalación de láminas de seguridad, polarizados y parabrisas en Lima..</p>
+
+    <div class="d-flex justify-content-center gap-3 mb-4">
+      <button class="btn btn-primary">Registrate</button>
+      <a href="#" class="btn btn-outline-dark">Contactanos</a>
+    </div>
+  </section>
+
+  <!-- Featured Cars -->
+  <section class="featured">
+    <h2>Líderes en la instalación de vidrios para tu auto</h2>
+    <div class="container">
+      <div class="row g-2">
+        <div class="col-md-3 col-lg-2 car-card mx-auto">
+          <img src="img/carrogris.jpeg" alt="Luxury Sedan">
+          <div class="p-3">
+           
+            <p> Protección contra accidentes y robos.</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-lg-2 car-card mx-auto">
+          <img src="img/carluna.jpeg" alt="Sports Coupe">
+          <div class="p-3">
+         
+            <p>Cuida a tu familia y al auto de los rayos UV al 99%.</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-lg-2 car-card mx-auto">
+          <img src="img/lugardos.jpeg" alt="Luxury SUV">
+          <div class="p-3">
+           
+            <p>Una empresa 100% confiable. </p>
+          </div>
+        </div>
+        <div class="col-md-3 col-lg-2 car-card mx-auto">
+          <img src="img/demostracion.png" alt="Convertible">
+          <div class="p-3">
+            
+            <p>Mantén tu carro con la mejor calidad en vidrios del mercado.</p>
+          </div>
+        </div>
+      
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pick Your Car -->
+  <section class="pick">
+    <h2>Conoce nuestros Servicios
+        
+    </h2>
+    <div class="container">
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-3 icon-box">
+          <i class="bi bi-check-circle"></i>
+          <h5>Easy Process</h5>
+          <p>Find your perfect car easily and quickly.</p>
+          <button class="btn btn-primary mt-2">Learn More</button>
+        </div>
+        <div class="col-md-3 icon-box">
+          <i class="bi bi-speedometer2"></i>
+          <h5>Fast Approval</h5>
+          <p>Quick financing and approval options.</p>
+          <button class="btn btn-primary mt-2">Learn More</button>
+        </div>
+        <div class="col-md-3 icon-box">
+          <i class="bi bi-truck"></i>
+          <h5>Secure Delivery</h5>
+          <p>Safe and fast vehicle delivery nationwide.</p>
+          <button class="btn btn-primary mt-2">Learn More</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Free Test Drive -->
+  <section class="test-drive">
+    <div class="container">
+      <div class="inner">
+        <div>
+          <h3>FREE TEST DRIVE</h3>
+          <p>Book a free test drive today and experience the power yourself.</p>
+          <button class="btn btn-light">Contact Us</button>
+        </div>
+        <img src="https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg" alt="Test Drive">
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 UniqueCar. All Rights Reserved.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
