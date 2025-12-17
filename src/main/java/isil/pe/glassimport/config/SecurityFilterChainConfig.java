@@ -82,7 +82,7 @@ public class SecurityFilterChainConfig {
                                 "/api/servicios/**")
                         .permitAll()
 
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
 
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 
