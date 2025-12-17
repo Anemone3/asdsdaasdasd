@@ -76,6 +76,7 @@ public class SecurityFilterChainConfig {
                                 "/api/auth/login",
                                 "/api/auth/register",
                                 "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/api/newhorarios",
                                 "/api/horarios-fijos/**",
                                 "/api/servicios/**")
@@ -88,7 +89,7 @@ public class SecurityFilterChainConfig {
                 // ✅ OAuth2 Google SOLO cuando se llama explícitamente
                 .oauth2Login(oauth -> oauth
                         .authorizationEndpoint(a -> a.baseUri("/oauth2/authorization"))
-                        .redirectionEndpoint(r -> r.baseUri("/oauth2/code/**"))
+                        // .redirectionEndpoint(r -> r.baseUri("/oauth2/code/**"))
                         .successHandler((request, response, authentication) -> {
                             try {
                                 OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
