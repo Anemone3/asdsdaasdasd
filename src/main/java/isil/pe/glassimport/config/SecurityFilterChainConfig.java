@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -48,112 +47,109 @@ public class SecurityFilterChainConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            // =========================
-            // CONFIG BÁSICA
-            // =========================
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .formLogin(AbstractHttpConfigurer::disable)
-            .httpBasic(AbstractHttpConfigurer::disable)
+                // =========================
+                // CONFIG BÁSICA
+                // =========================
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
 
-            // =========================
-            // MANEJO DE ERRORES 401
-            // =========================
-            .exceptionHandling(exception -> exception
-                .authenticationEntryPoint((req, res, ex) -> {
-                    res.setStatus(401);
-                    res.setContentType("application/json");
-                    res.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
-                })
-            )
+                // =========================
+                // MANEJO DE ERRORES 401
+                // =========================
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((req, res, ex) -> {
+                            res.setStatus(401);
+                            res.setContentType("application/json");
+                            res.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
+                        }))
 
-            // =========================
-            // AUTORIZACIÓN
-            // =========================
-            .authorizeHttpRequests(auth -> auth
+                // =========================
+                // AUTORIZACIÓN
+                // =========================
+                .authorizeHttpRequests(auth -> auth
 
-                // Swagger (solo dev)
-                .requestMatchers(
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html"
-                ).permitAll()
+                        // Swagger (solo dev)
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
+                        .permitAll()
 
-                // Endpoints públicos
-                .requestMatchers(
-                    "/api/auth/**",
-                    "/oauth2/**",
-                    "/login/oauth2/**",
-                    "/api/newhorarios",
-                    "/api/horarios-fijos/**",
-                    "/api/servicios/**"
-                ).permitAll()
+                        // Endpoints públicos
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
+                                "/api/newhorarios",
+                                "/api/horarios-fijos/**",
+                                "/api/servicios/**")
+                        .permitAll()
 
-                // Todo lo demás requiere JWT
-                .anyRequest().authenticated()
-            )
+                        // Todo lo demás requiere JWT
+                        .anyRequest().authenticated())
 
-            // =========================
-            // FILTRO JWT
-            // =========================
-            .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                // =========================
+                // FILTRO JWT
+                // =========================
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 
-            // =========================
-            // OAUTH2 GOOGLE
-            // =========================
-            .oauth2Login(oauth -> oauth
-                .authorizationEndpoint(a -> a.baseUri("/oauth2/authorization"))
-                .successHandler((request, response, authentication) -> {
+                // =========================
+                // OAUTH2 GOOGLE
+                // =========================
+                .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(a -> a.baseUri("/oauth2/authorization"))
+                        .successHandler((request, response, authentication) -> {
 
-                    try {
-                        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+                            try {
+                                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-                        String email = oAuth2User.getAttribute("email");
-                        Boolean emailVerified = oAuth2User.getAttribute("email_verified");
-                        String name = oAuth2User.getAttribute("name");
-                        String googleId = oAuth2User.getAttribute("sub");
+                                String email = oAuth2User.getAttribute("email");
+                                Boolean emailVerified = oAuth2User.getAttribute("email_verified");
+                                String name = oAuth2User.getAttribute("name");
+                                String googleId = oAuth2User.getAttribute("sub");
 
-                        if (email == null || emailVerified == null || !emailVerified) {
-                            response.sendRedirect(FRONTEND_URL + "/auth?error=email_not_verified");
-                            return;
-                        }
+                                if (email == null || emailVerified == null || !emailVerified) {
+                                    response.sendRedirect(FRONTEND_URL + "/auth?error=email_not_verified");
+                                    return;
+                                }
 
-                        User user = userRepository.findByEmail(email)
-                            .orElseGet(() -> {
-                                User newUser = User.builder()
-                                    .email(email)
-                                    .username(name)
-                                    .googleId(googleId)
-                                    .estado("ACTIVO")
-                                    .build();
-                                return userRepository.save(newUser);
-                            });
+                                User user = userRepository.findByEmail(email)
+                                        .orElseGet(() -> {
+                                            User newUser = User.builder()
+                                                    .email(email)
+                                                    .username(name)
+                                                    .googleId(googleId)
+                                                    .estado("ACTIVO")
+                                                    .build();
+                                            return userRepository.save(newUser);
+                                        });
 
-                        // JWT corto (5 minutos)
-                        long expiration = 5 * 60;
+                                // JWT corto (5 minutos)
+                                long expiration = 5 * 60;
 
-                        JwtPayload payload = new JwtPayload(
-                            user.getId().toString(),
-                            user.getEmail(),
-                            List.of("ROLE_USER")
-                        );
+                                JwtPayload payload = new JwtPayload(
+                                        user.getId().toString(),
+                                        user.getEmail(),
+                                        List.of("ROLE_USER"));
 
-                        String token = jwtService.generateToken(payload, expiration);
+                                String token = jwtService.generateToken(payload, expiration);
 
-                        // 🔐 NO exponemos datos sensibles
-                        String redirectUrl = FRONTEND_URL + "/auth/callback?token="
-                                + URLEncoder.encode(token, StandardCharsets.UTF_8);
+                                // 🔐 NO exponemos datos sensibles
+                                String redirectUrl = FRONTEND_URL + "/auth/callback?token="
+                                        + URLEncoder.encode(token, StandardCharsets.UTF_8);
 
-                        response.sendRedirect(redirectUrl);
+                                response.sendRedirect(redirectUrl);
 
-                    } catch (Exception e) {
-                        try {
-                            response.sendRedirect(FRONTEND_URL + "/auth?error=true");
-                        } catch (Exception ignored) {}
-                    }
-                })
-            );
+                            } catch (Exception e) {
+                                try {
+                                    response.sendRedirect(FRONTEND_URL + "/auth?error=true");
+                                } catch (Exception ignored) {
+                                }
+                            }
+                        }));
 
         return http.build();
     }
@@ -165,7 +161,8 @@ public class SecurityFilterChainConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(FRONTEND_URL));
+        config.setAllowedOrigins(List.of("http://localhost:3000",
+                "http://localhost:5173", FRONTEND_URL));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
