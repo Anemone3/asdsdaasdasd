@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -47,104 +48,127 @@ public class SecurityFilterChainConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // =========================
+            // CONFIG BÁSICA
+            // =========================
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
 
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
+            // =========================
+            // MANEJO DE ERRORES 401
+            // =========================
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((req, res, ex) -> {
+                    res.setStatus(401);
+                    res.setContentType("application/json");
+                    res.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
+                })
+            )
 
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((req, res, ex) -> {
+            // =========================
+            // AUTORIZACIÓN
+            // =========================
+            .authorizeHttpRequests(auth -> auth
 
-                            // Resto de la app: tu JSON personalizado
-                            res.setStatus(401);
-                            res.setContentType("application/json");
-                            res.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
-                        }))
+                // Swagger (solo dev)
+                .requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
 
-                .authorizeHttpRequests(auth -> auth
-                        // ✅ Swagger / OpenAPI sin autenticación
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll()
+                // Endpoints públicos
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/oauth2/**",
+                    "/login/oauth2/**",
+                    "/api/newhorarios",
+                    "/api/horarios-fijos/**",
+                    "/api/servicios/**"
+                ).permitAll()
 
-                        // ✅ Endpoints públicos (ajusta a tu gusto)
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
-                                "/api/newhorarios",
-                                "/api/horarios-fijos/**",
-                                "/api/servicios/**")
-                        .permitAll()
+                // Todo lo demás requiere JWT
+                .anyRequest().authenticated()
+            )
 
-                        .anyRequest().permitAll())
+            // =========================
+            // FILTRO JWT
+            // =========================
+            .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+            // =========================
+            // OAUTH2 GOOGLE
+            // =========================
+            .oauth2Login(oauth -> oauth
+                .authorizationEndpoint(a -> a.baseUri("/oauth2/authorization"))
+                .successHandler((request, response, authentication) -> {
 
-                // ✅ OAuth2 Google SOLO cuando se llama explícitamente
-                .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(a -> a.baseUri("/oauth2/authorization"))
-                        // .redirectionEndpoint(r -> r.baseUri("/oauth2/code/**"))
-                        .successHandler((request, response, authentication) -> {
-                            try {
-                                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+                    try {
+                        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-                                String email = oAuth2User.getAttribute("email");
-                                String name = oAuth2User.getAttribute("name");
-                                String googleId = oAuth2User.getAttribute("sub");
+                        String email = oAuth2User.getAttribute("email");
+                        Boolean emailVerified = oAuth2User.getAttribute("email_verified");
+                        String name = oAuth2User.getAttribute("name");
+                        String googleId = oAuth2User.getAttribute("sub");
 
-                                User user = userRepository.findByEmail(email)
-                                        .orElseGet(() -> {
-                                            User newUser = User.builder()
-                                                    .email(email)
-                                                    .username(name)
-                                                    .googleId(googleId)
-                                                    .estado("ACTIVO")
-                                                    .build();
-                                            return userRepository.save(newUser);
-                                        });
+                        if (email == null || emailVerified == null || !emailVerified) {
+                            response.sendRedirect(FRONTEND_URL + "/auth?error=email_not_verified");
+                            return;
+                        }
 
-                                long expiration = 7 * 24 * 60 * 60;
-                                JwtPayload payload = new JwtPayload(
-                                        user.getId().toString(),
-                                        user.getEmail(),
-                                        List.of("ROLE_USER"));
+                        User user = userRepository.findByEmail(email)
+                            .orElseGet(() -> {
+                                User newUser = User.builder()
+                                    .email(email)
+                                    .username(name)
+                                    .googleId(googleId)
+                                    .estado("ACTIVO")
+                                    .build();
+                                return userRepository.save(newUser);
+                            });
 
-                                String token = jwtService.generateToken(payload, expiration);
+                        // JWT corto (5 minutos)
+                        long expiration = 5 * 60;
 
-                                String redirectUrl = String.format(
-                                        FRONTEND_URL + "/auth/callback?token=%s&userId=%d&userName=%s&userEmail=%s",
-                                        token,
-                                        user.getId(),
-                                        URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8),
-                                        URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8));
+                        JwtPayload payload = new JwtPayload(
+                            user.getId().toString(),
+                            user.getEmail(),
+                            List.of("ROLE_USER")
+                        );
 
-                                response.sendRedirect(redirectUrl);
+                        String token = jwtService.generateToken(payload, expiration);
 
-                            } catch (Exception e) {
-                                try {
-                                    response.sendRedirect(FRONTEND_URL + "/auth?error=true");
-                                } catch (Exception ignored) {
-                                }
-                            }
-                        }));
+                        // 🔐 NO exponemos datos sensibles
+                        String redirectUrl = FRONTEND_URL + "/auth/callback?token="
+                                + URLEncoder.encode(token, StandardCharsets.UTF_8);
+
+                        response.sendRedirect(redirectUrl);
+
+                    } catch (Exception e) {
+                        try {
+                            response.sendRedirect(FRONTEND_URL + "/auth?error=true");
+                        } catch (Exception ignored) {}
+                    }
+                })
+            );
 
         return http.build();
     }
 
+    // =========================
+    // CORS SEGURO
+    // =========================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Si quieres ser más estricto, cambia "*" por FRONTEND_URL
-        config.setAllowedOrigins(List.of("*"));
+
+        config.setAllowedOrigins(List.of(FRONTEND_URL));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false);
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
