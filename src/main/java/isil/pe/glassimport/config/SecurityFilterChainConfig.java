@@ -75,7 +75,7 @@ public class SecurityFilterChainConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/login/oauth2/**",
+                                "/oauth2/**",
                                 "/api/newhorarios",
                                 "/api/horarios-fijos/**",
                                 "/api/servicios/**")
