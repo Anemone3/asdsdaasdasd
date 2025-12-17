@@ -2,14 +2,8 @@ package isil.pe.glassimport.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import isil.pe.glassimport.dto.request.ServicioRequestDTO;
 import isil.pe.glassimport.dto.response.ServicioResponseDto;
@@ -48,5 +42,22 @@ public class ServicioController {
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
         servicioService.eliminar(id);
+    }
+
+    // 🔹 NUEVO: toggle habilitado
+    @PatchMapping("/{id}/toggle")
+    public ResponseEntity<ServicioResponseDto> toggleHabilitado(
+            @PathVariable Long id,
+            @RequestBody ToggleRequest body) {
+
+        ServicioResponseDto dto = servicioService.toggleHabilitado(id, body.isHabilitado());
+        return ResponseEntity.ok(dto);
+    }
+
+    // DTO interno para leer { "habilitado": true/false }
+    public static class ToggleRequest {
+        private boolean habilitado;
+        public boolean isHabilitado() { return habilitado; }
+        public void setHabilitado(boolean habilitado) { this.habilitado = habilitado; }
     }
 }

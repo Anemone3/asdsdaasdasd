@@ -27,6 +27,7 @@ public class ServicioService {
                 .descripcion(dto.getDescripcion())
                 .precio(dto.getPrecio())
                 .activo(dto.getActivo() != null ? dto.getActivo() : true)
+                .habilitado(dto.getHabilitado() != null ? dto.getHabilitado() : true) // default true
                 .build();
 
         servicioRepository.save(servicio);
@@ -56,6 +57,9 @@ public class ServicioService {
         servicio.setDescripcion(dto.getDescripcion());
         servicio.setPrecio(dto.getPrecio());
         servicio.setActivo(dto.getActivo());
+        if (dto.getHabilitado() != null) {
+            servicio.setHabilitado(dto.getHabilitado());
+        }
 
         servicioRepository.save(servicio);
 
@@ -71,6 +75,17 @@ public class ServicioService {
         servicioRepository.save(servicio);
     }
 
+    // 🔹 nuevo método toggle
+    public ServicioResponseDto toggleHabilitado(Long id, boolean habilitado) {
+        Servicio servicio = servicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+        servicio.setHabilitado(habilitado);
+        servicioRepository.save(servicio);
+
+        return toDto(servicio);
+    }
+
     private ServicioResponseDto toDto(Servicio servicio) {
         return ServicioResponseDto.builder()
                 .id(servicio.getId())
@@ -78,6 +93,7 @@ public class ServicioService {
                 .descripcion(servicio.getDescripcion())
                 .precio(servicio.getPrecio())
                 .activo(servicio.getActivo())
+                .habilitado(servicio.getHabilitado())
                 .build();
     }
 }
