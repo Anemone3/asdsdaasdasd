@@ -1,12 +1,21 @@
 package isil.pe.glassimport.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import isil.pe.glassimport.dto.request.ToggleRequest;
 import isil.pe.glassimport.entity.HorarioFijo;
-import isil.pe.glassimport.service.HorarioFijoService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import isil.pe.glassimport.services.HorarioFijoService;
 
 @RestController
 @RequestMapping("/api")
@@ -46,7 +55,7 @@ public class HorarioFijoController {
 
     @PatchMapping("/horarios-fijos/{id}/toggle")
     public ResponseEntity<?> toggleHorario(@PathVariable Long id,
-                                           @RequestBody ToggleRequest request) {
+            @RequestBody ToggleRequest request) {
         try {
             HorarioFijo actualizado = service.toggleEstado(id, request.getHabilitado());
             return ResponseEntity.ok(actualizado);
@@ -57,8 +66,17 @@ public class HorarioFijoController {
 
     public static class ErrorResponse {
         private String message;
-        public ErrorResponse(String message) { this.message = message; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
+
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 }
