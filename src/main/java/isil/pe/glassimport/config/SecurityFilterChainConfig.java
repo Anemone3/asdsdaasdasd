@@ -56,16 +56,6 @@ public class SecurityFilterChainConfig {
 
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((req, res, ex) -> {
-                            String uri = req.getRequestURI();
-
-                            // ⚠️ Para rutas de Swagger/OpenAPI devolvemos solo el código,
-                            // para que springdoc pueda manejar la respuesta sin tu JSON custom
-                            if (uri.startsWith("/v3/api-docs")
-                                    || uri.startsWith("/swagger-ui")
-                                    || uri.equals("/swagger-ui.html")) {
-                                res.sendError(401, "Unauthorized");
-                                return;
-                            }
 
                             // Resto de la app: tu JSON personalizado
                             res.setStatus(401);
@@ -78,18 +68,18 @@ public class SecurityFilterChainConfig {
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                                "/swagger-ui.html")
+                        .permitAll()
 
                         // ✅ Endpoints públicos (ajusta a tu gusto)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/api/newhorarios",
                                 "/api/horarios-fijos/**",
-                                "/api/servicios/**"
-                        ).permitAll()
+                                "/api/servicios/**")
+                        .permitAll()
 
                         .anyRequest().authenticated())
 
@@ -138,7 +128,8 @@ public class SecurityFilterChainConfig {
                             } catch (Exception e) {
                                 try {
                                     response.sendRedirect(FRONTEND_URL + "/auth?error=true");
-                                } catch (Exception ignored) {}
+                                } catch (Exception ignored) {
+                                }
                             }
                         }));
 
