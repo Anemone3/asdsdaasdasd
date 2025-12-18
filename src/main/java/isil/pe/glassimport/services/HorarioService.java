@@ -2,7 +2,6 @@ package isil.pe.glassimport.services;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,12 +9,16 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import isil.pe.glassimport.entity.Horario;
+import isil.pe.glassimport.entity.HorarioFijo;
 import isil.pe.glassimport.repository.HorarioRepository;
+import isil.pe.glassimport.repository.HorarioFijoRepository;
+import isil.pe.glassimport.repository.ReservaRepository;
 
 @Service
 public class HorarioService {
@@ -23,9 +26,13 @@ public class HorarioService {
     @Autowired
     private HorarioRepository repo;
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    @Autowired
+    private ReservaRepository reservaRepository;
 
-    private final List<String> HORAS = Arrays.asList("09:00", "10:30", "12:00", "15:00", "17:00");
+    @Autowired
+    private HorarioFijoRepository horarioFijoRepository;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     private final DateTimeFormatter HORA_IN = DateTimeFormatter.ofPattern("H:mm");
     private final DateTimeFormatter HORA_OUT = DateTimeFormatter.ofPattern("HH:mm");
@@ -35,13 +42,33 @@ public class HorarioService {
         return t.format(HORA_OUT);
     }
 
+    private List<String> obtenerHorasHabilitadas() {
+        return horarioFijoRepository.findAll()
+                .stream()
+                .filter(h -> Boolean.TRUE.equals(h.getHabilitado()))
+                .map(HorarioFijo::getHora)
+                .collect(Collectors.toList());
+    }
+
+
     public Map<String, String> getEstadosHorarios(String fecha) {
+        List<String> horasHabilitadas = obtenerHorasHabilitadas();
         Map<String, String> result = new HashMap<>();
-        for (String hora : HORAS) {
-            String estado = repo.findByFechaAndHora(fecha, hora)
-                    .map(Horario::getEstado)
-                    .orElse("LIBRE");
-            result.put(hora, estado);
+
+        for (String hora : horasHabilitadas) {
+            Optional<Horario> horarioOpt = repo.findByFechaAndHora(fecha, hora);
+
+            if (horarioOpt.isPresent()) {
+                Horario h = horarioOpt.get();
+
+                if (reservaRepository.existsReservaActivaByHorarioId(h.getId())) {
+                    result.put(hora, "OCUPADO");
+                } else {
+                    result.put(hora, h.getEstado());
+                }
+            } else {
+                result.put(hora, "LIBRE");
+            }
         }
         return result;
     }
@@ -50,11 +77,26 @@ public class HorarioService {
         String hora = normalizarHora(horaCruda);
         System.out.println("LOCK REQUEST => fecha=" + fecha + ", hora=" + hora);
 
+        List<String> horasHabilitadas = obtenerHorasHabilitadas();
+        if (!horasHabilitadas.contains(hora)) {
+            System.out.println("NO SE PUEDE BLOQUEAR, HORA NO HABILITADA");
+            return false;
+        }
+
         Optional<Horario> hOpt = repo.findByFechaAndHora(fecha, hora);
 
-        if (hOpt.isPresent() && !"LIBRE".equals(hOpt.get().getEstado())) {
-            System.out.println("NO SE PUEDE BLOQUEAR, YA NO ESTÁ LIBRE");
-            return false;
+        if (hOpt.isPresent()) {
+            Horario h = hOpt.get();
+
+            if (reservaRepository.existsReservaActivaByHorarioId(h.getId())) {
+                System.out.println("NO SE PUEDE BLOQUEAR, YA TIENE RESERVA ACTIVA");
+                return false;
+            }
+
+            if (!"LIBRE".equals(h.getEstado())) {
+                System.out.println("NO SE PUEDE BLOQUEAR, YA NO ESTÁ LIBRE");
+                return false;
+            }
         }
 
         Horario h = hOpt.orElse(Horario.builder().build());
