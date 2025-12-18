@@ -89,7 +89,7 @@ public class SecurityFilterChainConfig {
                         .permitAll()
 
                         // Todo lo demás requiere JWT
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
 
                 // =========================
                 // FILTRO JWT
